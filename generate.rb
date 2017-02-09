@@ -21,8 +21,16 @@ first_row = ImageList.new
 #this is an image containing second row of images
 #second_row = ImageList.new
 
-#adding images to the first row (Image.read returns an Array, this is why .first is needed)
-first_row.push(Image.read("qr/michel.png").first)
+# adding images to the first row
+# (Image.read returns an Array, this is why .first is needed)
+michel = Image.read("qr/michel.png").first
+text = Draw.new
+text.font_family = 'helvetica'
+text.pointsize = 12
+text.gravity = SouthGravity
+text.annotate(michel, 0,0,0,0, 'mike')
+
+first_row.push(michel)
 first_row.push(Image.read("qr/bill.png").first)
 
 # adding first row to big image and specify that we want images in first row to
@@ -36,4 +44,4 @@ big_image.push (first_row.append(false))
 # big_image.push(second_row.append(false))
 
 #now we are saving the final image that is composed from 2 images by sepcify append with argument true meaning that each image will be on a separate row
-big_image.append(true).write("qr/big_image.png")
+big_image.write("qr/big_image.png")
