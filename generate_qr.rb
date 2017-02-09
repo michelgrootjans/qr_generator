@@ -14,7 +14,7 @@ end
 def generate_single_qr_file(code)
   options = {
       size: 120,
-      border_modules: 2,
+      border_modules: 4,
       file: filename_for(code)
   }
   RQRCode::QRCode.new(code['qrCode']).as_png(options)
