@@ -1,47 +1,43 @@
+require 'json'
 require 'rqrcode'
-
-qr1 = RQRCode::QRCode.new('michelgrootjans')
-qr2 = RQRCode::QRCode.new('billgates')
-
-# puts qrcode.as_png.to_s
-
-IO.write('qr/michel.png', qr1.as_png.to_s)
-IO.write('qr/bill.png', qr2.as_png.to_s)
-
 require 'rmagick'
-#image_list = Magick::ImageList.new("/tmp/qr/michel.png", "/tmp/qr/bill.png")
-#image_list.write("/tmp/qr/combine.png")
-
 include Magick
-#this will be the final image
-big_image = ImageList.new
 
-#this is an image containing first row of images
-first_row = ImageList.new
-#this is an image containing second row of images
-#second_row = ImageList.new
+def filename_for(code)
+  "qr/#{code['shortcode']}.png"
+end
 
-# adding images to the first row
-# (Image.read returns an Array, this is why .first is needed)
-michel = Image.read("qr/michel.png").first
-text = Draw.new
-text.font_family = 'helvetica'
-text.pointsize = 12
-text.gravity = SouthGravity
-text.annotate(michel, 0,0,0,0, 'mike')
+def joined_filename_for(code1, code2)
+  "qr/#{code1['shortcode']}_#{code2['shortcode']}.png"
+end
 
-first_row.push(michel)
-first_row.push(Image.read("qr/bill.png").first)
+def generate_single_qr_file(code1)
+  qr1 = RQRCode::QRCode.new(code1['qrCode'])
+  IO.write(filename_for(code1), qr1.as_png.to_s)
+end
 
-# adding first row to big image and specify that we want images in first row to
-# be appended in a single image on the same row
-# - argument false on append does that
-big_image.push (first_row.append(false))
+def annotated_file_for(code1)
+  text = Draw.new
+  text.font_family = 'helvetica'
+  text.pointsize = 12
+  text.gravity = SouthGravity
 
-#same thing for second row
-# second_row.push(Image.read("3.png").first)
-# second_row.push(Image.read("4.jpg").first)
-# big_image.push(second_row.append(false))
+  image1 = Image.read(filename_for(code1)).first
+  text.annotate(image1, 0, 0, 0, 0, code1['shortcode'])
+  image1
+end
 
-#now we are saving the final image that is composed from 2 images by sepcify append with argument true meaning that each image will be on a separate row
-big_image.write("qr/big_image.png")
+JSON.parse(File.read('qr/codes.json')).each_slice(2) do |code1, code2|
+  row = ImageList.new
+  generate_single_qr_file(code1)
+  row.push(annotated_file_for(code1))
+  generate_single_qr_file(code2)
+  row.push(annotated_file_for(code2))
+
+  big_image = ImageList.new
+  big_image.push (row.append(false))
+  big_image.write(joined_filename_for(code1, code2))
+
+  File.delete(filename_for(code1))
+  File.delete(filename_for(code2))
+end
