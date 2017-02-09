@@ -11,13 +11,17 @@ def joined_filename_for(code1, code2)
   "qr/#{code1['shortCode']}_#{code2['shortCode']}.png"
 end
 
+def qr_code_for(code)
+  "http://www.slingshot.company?s=#{code['shortCode']}"
+end
+
 def generate_single_qr_file(code)
   options = {
       size: 120,
       border_modules: 2,
       file: filename_for(code)
   }
-  RQRCode::QRCode.new(code['qrCode']).as_png(options)
+  RQRCode::QRCode.new(qr_code_for(code)).as_png(options)
 end
 
 def annotated_file_for(code)
@@ -33,7 +37,7 @@ def annotated_file_for(code)
   image1
 end
 
-JSON.parse(File.read('qr/codes.json')).each_slice(2) do |code1, code2|
+JSON.parse(File.read(ARGV[0])).each_slice(2) do |code1, code2|
   row = ImageList.new
   row.push(annotated_file_for(code1))
   row.push(annotated_file_for(code2))
