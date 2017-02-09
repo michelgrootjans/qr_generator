@@ -11,9 +11,13 @@ def joined_filename_for(code1, code2)
   "qr/#{code1['shortcode']}_#{code2['shortcode']}.png"
 end
 
-def generate_single_qr_file(code1)
-  qr1 = RQRCode::QRCode.new(code1['qrCode'])
-  IO.write(filename_for(code1), qr1.as_png.to_s)
+def generate_single_qr_file(code)
+  options = {
+      size: 120,
+      border_modules: 2,
+      file: filename_for(code)
+  }
+  RQRCode::QRCode.new(code['qrCode']).as_png(options)
 end
 
 def annotated_file_for(code1)
@@ -23,7 +27,7 @@ def annotated_file_for(code1)
   text.gravity = SouthGravity
 
   image1 = Image.read(filename_for(code1)).first
-  text.annotate(image1, 0, 0, 0, 0, code1['shortcode'])
+  text.annotate(image1, 0, 0, 0, 5, code1['shortcode'])
   image1
 end
 
