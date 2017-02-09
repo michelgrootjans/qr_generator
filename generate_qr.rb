@@ -4,38 +4,38 @@ require 'rmagick'
 include Magick
 
 def filename_for(code)
-  "qr/#{code['shortcode']}.png"
+  "qr/#{code['shortCode']}.png"
 end
 
 def joined_filename_for(code1, code2)
-  "qr/#{code1['shortcode']}_#{code2['shortcode']}.png"
+  "qr/#{code1['shortCode']}_#{code2['shortCode']}.png"
 end
 
 def generate_single_qr_file(code)
   options = {
       size: 120,
-      border_modules: 4,
+      border_modules: 2,
       file: filename_for(code)
   }
   RQRCode::QRCode.new(code['qrCode']).as_png(options)
 end
 
-def annotated_file_for(code1)
+def annotated_file_for(code)
+  generate_single_qr_file(code)
+
   text = Draw.new
   text.font_family = 'helvetica'
   text.pointsize = 12
   text.gravity = SouthGravity
 
-  image1 = Image.read(filename_for(code1)).first
-  text.annotate(image1, 0, 0, 0, 5, code1['shortcode'])
+  image1 = Image.read(filename_for(code)).first
+  text.annotate(image1, 0, 0, 0, 5, code['shortCode'])
   image1
 end
 
 JSON.parse(File.read('qr/codes.json')).each_slice(2) do |code1, code2|
   row = ImageList.new
-  generate_single_qr_file(code1)
   row.push(annotated_file_for(code1))
-  generate_single_qr_file(code2)
   row.push(annotated_file_for(code2))
 
   big_image = ImageList.new
